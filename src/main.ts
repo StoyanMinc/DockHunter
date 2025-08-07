@@ -1,9 +1,17 @@
 import { COLORS } from './constants';
+import gameManager from './gameManager';
 import k from './kaplayCtx';
 import { formatScore } from './utils';
 
-k.loadSprite('menu', './graphics/menu.png');
 k.loadFont('nes', './fonts/nintendo-nes-font.ttf');
+
+k.loadSprite('menu', './graphics/menu.png');
+k.loadSprite('background', './graphics/background.png');
+k.loadSprite('cursor', './graphics/cursor.png');
+k.loadSprite('text-box', './graphics/text-box.png');
+
+k.loadSound('gun-shot', './sounds/gun-shot.wav');
+k.loadSound('ui-appear', './sounds/ui-appear.wav');
 
 k.scene('main-menu', () => {
     k.add([k.sprite('menu')]);
@@ -32,6 +40,54 @@ k.scene('main-menu', () => {
 });
 
 k.scene('game-on', () => {
+    k.add([k.rect(k.width(), k.height()), k.color(COLORS.BLUE), 'sky']);
+    k.add([k.sprite('background'), k.pos(0, -10), k.z(2)]);
+    const score = k.add([
+        k.text(formatScore(0, 6), { font: 'nes', size: 8 }),
+        k.pos(192, 197),
+        k.z(2)
+    ]);
+    document.querySelector('canvas')!.style.cursor = 'none';
+    const roundCount = k.add([
+        k.text('1', { font: 'nes', size: 7 }),
+        k.color(COLORS.RED),
+        k.pos(42, 182),
+        k.z(2)
+    ]);
+    let duckIcons = k.add([k.pos(95, 198)]);
+    let duckInconsPosX = 1;
+    for (let i = 0; i < 10; i++) {
+        duckIcons.add([k.rect(7, 8), k.pos(duckInconsPosX, 0), `duckIcon-${i}`]);
+        duckInconsPosX += 8
+    };
+    const bulletHideElement = k.add([
+        k.rect(0, 8),
+        k.pos(25, 198),
+        k.color(COLORS.BLACK),
+        k.z(2)
+    ]);
+
+    k.onUpdate(() => {
+        score.text = formatScore(gameManager.currentScore, 6);
+
+        if (gameManager.bulletsLeft === 3) {
+            bulletHideElement.width = 0
+        } else if (gameManager.bulletsLeft === 2) {
+            bulletHideElement.width = 8
+        } else if (gameManager.bulletsLeft === 1) {
+            bulletHideElement.width = 16
+        } else {
+            bulletHideElement.width = 24
+        }
+        cursor.moveTo(k.mousePos());
+    });
+
+    k.onClick(() => {
+        if (gameManager.state === 'hunt-start' && gameManager.bulletsLeft > 0) {
+            k.play('gun-shot', { volume: 0.5 });
+        }
+        gameManager.bulletsLeft--;
+    })
 
 });
 
