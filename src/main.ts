@@ -67,6 +67,42 @@ k.scene('game-on', () => {
         k.z(2)
     ]);
 
+    const roundStartController = gameManager.onStateEnter(
+        'round-start',
+        async (isFirstRound: boolean) => {
+            if (!isFirstRound) { gameManager.gameSpeed += 50 }
+            k.play('ui-appear', { volume: 1 });
+            gameManager.currentRound++;
+            roundCount.text = gameManager.currentRound.toString();
+
+            const textBox = k.add([
+                k.sprite('text-box'),
+                k.anchor('center'),
+                k.pos(k.center().x, k.center().y - 50),
+                k.z(3)
+            ]);
+            textBox.add([
+                k.text('ROUND', { font: 'nes', size: 8 }),
+                k.anchor('center'),
+                k.pos(0, -7)
+            ]);
+            textBox.add([
+                k.text(gameManager.currentRound.toString(), { font: 'nes', size: 8 }),
+                k.anchor('center'),
+                k.pos(0, 5)
+            ]);
+            await k.wait(1);
+            k.destroy(textBox);
+            gameManager.enterState('hunt-start');
+        });
+
+    const cursor = k.add([
+        k.sprite('cursor'),
+        k.pos(),
+        k.anchor('center'),
+        k.z(3)
+    ]);
+
     k.onUpdate(() => {
         score.text = formatScore(gameManager.currentScore, 6);
 
