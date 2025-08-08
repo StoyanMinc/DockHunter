@@ -1,4 +1,5 @@
 import { COLORS } from './constants';
+import createDog from './elements/dog';
 import gameManager from './gameManager';
 import k from './kaplayCtx';
 import { formatScore } from './utils';
@@ -9,9 +10,25 @@ k.loadSprite('menu', './graphics/menu.png');
 k.loadSprite('background', './graphics/background.png');
 k.loadSprite('cursor', './graphics/cursor.png');
 k.loadSprite('text-box', './graphics/text-box.png');
+k.loadSprite('dog', './graphics/dog.png', {
+    sliceX: 4,
+    sliceY: 3,
+    anims: {
+        search: { from: 0, to: 3, speed: 6, loop: true },
+        sniff: { from: 4, to: 5, speed: 4, loop: true },
+        detect: 6,
+        jump: { from: 7, to: 8, speed: 6, loop: true },
+        catch: 9,
+        mocking: { from: 10, to: 11, loop: true },
+    }
+});
 
 k.loadSound('gun-shot', './sounds/gun-shot.wav');
 k.loadSound('ui-appear', './sounds/ui-appear.wav');
+k.loadSound('sniffing', './sounds/sniffing.wav');
+k.loadSound('laughing', './sounds/laughing.wav');
+k.loadSound('barking', './sounds/barking.wav');
+k.loadSound('successful-hunt', './sounds/successful-hunt.wav');
 
 k.scene('main-menu', () => {
     k.add([k.sprite('menu')]);
@@ -67,6 +84,8 @@ k.scene('game-on', () => {
         k.z(2)
     ]);
 
+    const dog = createDog(k.vec2(0, k.center().y));
+    dog.searchForDucks();
     const roundStartController = gameManager.onStateEnter(
         'round-start',
         async (isFirstRound: boolean) => {
@@ -95,6 +114,26 @@ k.scene('game-on', () => {
             k.destroy(textBox);
             gameManager.enterState('hunt-start');
         });
+
+    const roundEndController = gameManager.onStateEnter('round-end', async () => {
+
+    });
+
+    const huntStartController = gameManager.onStateEnter('hunt-start', async () => {
+
+    });
+
+    const huntEndController = gameManager.onStateEnter('hunt-end', async () => {
+
+    });
+
+    const duckShootedController = gameManager.onStateEnter('duck-shooted', async () => {
+
+    });
+
+    const duckMissedController = gameManager.onStateEnter('duck-missed', async () => {
+
+    });
 
     const cursor = k.add([
         k.sprite('cursor'),
@@ -125,6 +164,15 @@ k.scene('game-on', () => {
         gameManager.bulletsLeft--;
     })
 
+    k.onSceneLeave(() => {
+        roundStartController.cancel();
+        roundEndController.cancel();
+        huntStartController.cancel();
+        huntEndController.cancel();
+        duckShootedController.cancel();
+        duckMissedController.cancel();
+        gameManager.resetGame();
+    })
 });
 
 k.scene('game-over', () => {
